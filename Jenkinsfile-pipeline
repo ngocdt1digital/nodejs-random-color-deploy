@@ -14,9 +14,14 @@ pipeline {
         }
         stage('Upload image to ECR') {
             steps {
-                sh 'aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 590183692627.dkr.ecr.ap-southeast-1.amazonaws.com'
-                sh 'docker tag nodejs-random-color-deploy-to-ecr:ver-${BUILD_ID} 590183692627.dkr.ecr.ap-southeast-1.amazonaws.com/nodejs-random-color-deploy-to-ecr:ver-${BUILD_ID}'
-                sh 'docker push 590183692627.dkr.ecr.ap-southeast-1.amazonaws.com/nodejs-random-color-deploy-to-ecr:ver-${BUILD_ID}'
+                withCredentials([[
+                    $class: 'AmazonWebServicesCredentialsBinding',   // chỉ định loại thông tin xác thực AWS
+                    credentialsId: 'ngocdt_connect-aws'             // ID của AWS credentials trong Jenkins
+                ]]) {
+                    sh 'aws ecr get-login-password --region ap-southeast-1 | docker login --username AWS --password-stdin 590183692627.dkr.ecr.ap-southeast-1.amazonaws.com'
+                    sh 'docker tag nodejs-random-color-deploy-to-ecr:ver-${BUILD_ID} 590183692627.dkr.ecr.ap-southeast-1.amazonaws.com/nodejs-random-color-deploy-to-ecr:ver-${BUILD_ID}'
+                    sh 'docker push 590183692627.dkr.ecr.ap-southeast-1.amazonaws.com/nodejs-random-color-deploy-to-ecr:ver-${BUILD_ID}'
+                }
             }
         }
     }
